@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador Avançado de Propostas - Repar Service</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f111a;
+            color: #e3e6ed;
+            margin: 0;
+            padding: 30px 15px;
+            font-size: 11pt;
+            line-height: 1.5;
+        }
+
+        .painel-controle {
+            background: #161925;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 950px;
+            margin: 0 auto 30px auto;
+            border: 1px solid #2a2f45;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .painel-controle h2 {
+            color: #ff3b3b;
+            margin-top: 0;
+            font-size: 18pt;
+            border-bottom: 2px solid #2a2f45;
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .grid {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: separate;
+            border-spacing: 15px 0;
+            margin-left: -15px;
+            margin-right: -15px;
+            margin-bottom: 15px;
+        }
+
+        .col {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .w-100 { width: 100%; }
+        .w-50 { width: 50%; }
+        .w-33 { width: 33.33%; }
+        .w-25 { width: 25%; }
+
+        .campo {
+            margin-bottom: 15px;
+        }
+
+        .campo label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #a0aec0;
+            font-size: 9.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .campo input, .campo textarea, .campo select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #2a2f45;
+            background: #0f111a;
+            color: #ffffff;
+            border-radius: 6px;
+            font-size: 10.5pt;
+        }
+
+        .campo input:focus, .campo textarea:focus {
+            border-color: #ff3b3b;
+            outline: none;
+        }
+
+        .checkbox-group {
+            background: #0f111a;
+            border: 1px solid #2a2f45;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #e3e6ed;
+            font-size: 10pt;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 10px;
+            accent-color: #ff3b3b;
+            transform: scale(1.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #ff3b3b 0%, #b01212 100%);
+            color: white;
+            border: none;
+            padding: 16px 30px;
+            font-size: 12pt;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 59, 59, 0.3);
+        }
+
+        button:hover { filter: brightness(1.1); }
+        
+        /* -------------------------------------------------------------------------
+           ESTILO DE IMPRESSÃO (Fundo Limpo com Linhas do Modelo Word)
+           ------------------------------------------------------------------------- */
+        #preview {
+            background: #ffffff;
+            color: #1a202c;
+            padding: 45px;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 4px;
+            display: none;
+            position: relative;
+            border-top: 8px solid #b01212;
+        }
+
+        #preview::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.02;
+            pointer-events: none;
+            background-image: radial-gradient(#b01212 1px, transparent 1px);
+            background-size: 16px 16px;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .header-table td {
+            padding: 0;
+            border: none;
+            vertical-align: middle;
+        }
+
+        .logo-container { width: 180px; }
+        .logo-img { max-width: 160px; height: auto; display: block; }
+
+        .company-info {
+            text-align: right;
+            font-size: 9pt;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .company-title {
+            font-size: 13pt;
+            font-weight: 700;
+            color: #b01212;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .doc-title-bar {
+            background: #1a202c;
+            color: #ffffff;
+            padding: 12px 20px;
+            font-size: 13pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 25px;
+            border-left: 6px solid #ff3b3b;
+            display: table;
+            width: 100%;
+        }
+
+        .doc-title-cell { display: table-cell; vertical-align: middle; }
+        .doc-meta-cell { display: table-cell; text-align: right; font-size: 9.5pt; color: #cbd5e0; font-weight: 400; vertical-align: middle; }
+
+        .secao-titulo {
+            font-size: 10.5pt;
+            font-weight: 700;
+            color: #b01212;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 25px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .info-block {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-table { width: 100%; border-collapse: collapse; }
+        .info-table td { padding: 6px 10px; border: none; font-size: 10pt; vertical-align: top; }
+        .info-label { font-weight: 700; color: #4a5568; width: 140px; }
+        .info-value { color: #1a202c; }
+
+        .diagnostico-box {
+            background: #fdfdfd;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #b01212;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .diag-item { margin-bottom: 8px; font-size: 10pt; color: #2d3748; }
+        
+        .diag-item-box {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #b01212;
+            background: #fff;
+            margin-right: 8px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10pt;
+            color: #b01212;
+            font-weight: 900;
+        }
+
+        .texto-laudo {
+            font-size: 10pt;
+            line-height: 1.6;
+            color: #2d3748;
+            background: #f8fafc;
+            padding: 12px 15px;
+            border: 1px dashed #cbd5e0;
+            border-radius: 4px;
+            margin-top: 12px;
+            white-space: pre-wrap;
+        }
+
+        .service-list { margin: 0; padding: 0 0 0 20px; font-size: 10pt; color: #2d3748; }
+        .service-list li { margin-bottom: 6px; }
+
+        .tabela-financeira {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tabela-financeira th {
+            background: #1a202c;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 9.5pt;
+            text-transform: uppercase;
+        }
+
+        .tabela-financeira td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 10pt;
+            color: #2d3748;
+        }}
+
+        .tabela-financeira tr:nth-child(even) td { background: #f8fafc; }
+
+        .tabela-financeira .linha-total td {
+            background: #fff5f5;
+            border-top: 2px solid #b01212;
+            border-bottom: 2px solid #b01212;
+            font-size: 11pt;
+            font-weight: 700;
+            color: #b01212;
+        }
+
+        .garantia-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 8.5pt;
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .assinatura-container {
+            margin-top: 40px;
+            text-align: center;
+            border-top: 1px solid #cbd5e0;
+            display: inline-block;
+            width: 300px;
+            padding-top: 8px;
+            font-size: 10pt;
+            color: #4a5568;
+        }
+
+        @media print {
+            body { background: #ffffff; color: #000000; padding: 0; }
+            .painel-controle { display: none; }
+            #preview { display: block !important; border: none; box-shadow: none; padding: 0; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="painel-controle">
+        <h2>🛠️ Painel Avançado de Orçamentos — REPAR SERVICE</h2>
+        
+        <div class="secao-titulo" style="color:#ff3b3b; border-color:#2a2f45;">1. Dados de Identificação de Controle</div>
+        <div class="grid">
+            <div class="col w-33"><div class="campo"><label>Nº da OS / Proposta</label><input type="text" id="inOS" value="12356"></div></div>
+            <div class="col w-33"><div class="campo"><label>Data de Emissão</label><input type="text" id="inData" value="19/05/2026"></div></div>
+            <div class="col w-33"><div class="campo"><label>Validade da Proposta</label><input type="text" id="inValidade" value="05 Dias"></div></div>
+        </div>
+
+        <div class="grid">
+            <div class="col w-50"><div class="campo"><label>Razão Social do Cliente</label><input type="text" id="inCliente" value="FORCHAPA INDUSTRIA DE CHAPAS DE PAPELAO ONDULADO LTDA"></div></div>
+            <div class="col w-50"><div class="campo"><label>CNPJ do Cliente</label><input type="text" id="inCNPJ" value="53.369.266/0001-72"></div></div>
+        </div>
+
+        <div class="grid">
+            <div class="col w-33"><div class="campo"><label>E-mail Corporativo</label><input type="text" id="inEmail" value="almoxarifado@forchapa.com.br"></div></div>
+            <div class="col w-33"><div class="campo"><label>Solicitante / Contato</label><input type="text" id="inSolicitante" value="ERLON"></div></div>
+            <div class="col w-33">
+                <div class="campo">
+                    <label>Tipo de Manutenção</label>
+                    <select id="inTipo">
+                        <option value="Corretiva" selected>Corretiva (Manutenção Técnica)</option>
+                        <option value="Preventiva">Preventiva (Geral Planificada)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-titulo" style="color:#ff3b3b; border-color:#2a2f45;">2. Informações do Equipamento</div>
+        <div class="grid">
+            <div class="col w-25"><div class="campo"><label>Equipamento</label><input type="text" id="inEquip" value="INVERSOR DE FREQUÊNCIA"></div></div>
+            <div class="col w-25"><div class="campo"><label>Fabricante / Marca</label><input type="text" id="inFabricante" value="SIEMENS"></div></div>
+            <div class="col w-25"><div class="campo"><label>Modelo Técnico</label><input type="text" id="inModelo" value="6SE6420-2UD13-7AA1"></div></div>
+            <div class="col w-25"><div class="campo"><label>Número de Série</label><input type="text" id="inSerie" value="XAW204-003340"></div></div>
+        </div>
+        
+        <div class="grid">
+            <div class="col w-50"><div class="campo"><label>Nota Fiscal de Entrada</label><input type="text" id="inNF" value="6172"></div></div>
+            <div class="col w-50"><div class="campo"><label>Data de Entrada</label><input type="text" id="inDataEntrada" value="08/05/2026"></div></div>
+        </div>
+
+        <div class="secao-titulo" style="color:#ff3b3b; border-color:#2a2f45;">3. Triagem Eletrônica e Diagnóstico</div>
+        <div class="grid">
+            <div class="col w-50">
+                <div class="campo"><label>Checklist de Bancada</label></div>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="chkDiag1"> Aparelho totalmente inoperante (Não liga)</label>
+                    <label><input type="checkbox" id="chkDiag2" checked> Componentes internos avariados / Danos físicos</label>
+                    <label><input type="checkbox" id="chkDiag3"> Sinais de oxidação por umidade / líquido</label>
+                    <label><input type="checkbox" id="chkDiag4"> Instabilidade intermitente ou superaquecimento</label>
+                </div>
+            </div>
+            <div class="col w-50">
+                <div class="campo"><label>Causas Prováveis</label></div>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="chkCausa1" checked> Sobretensão originada na rede externa</label>
+                    <label><input type="checkbox" id="chkCausa2" checked> Descarga atmosférica (Surto de Raio)</label>
+                    <label><input type="checkbox" id="chkCausa3"> Acúmulo de poeira condutiva / Óleo</label>
+                    <label><input type="checkbox" id="chkCausa4" checked> Fim da vida útil / Fadiga de componentes</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label>Laudo Detalhado da Proposta</label>
+            <textarea id="inLaudo" rows="3">Aparelho apresenta falhas internas severas em seus circuitos eletrônicos, operando sem carbonização estrutural eletrônica.</textarea>
+        </div>
+
+        <div class="secao-titulo" style="color:#ff3b3b; border-color:#2a2f45;">4. Valores e Prazos</div>
+        <div class="grid">
+            <div class="col w-33"><div class="campo"><label>Valor Total (R$)</label><input type="text" id="inValor" value="5.700,00"></div></div>
+            <div class="col w-33"><div class="campo"><label>Prazo de Entrega</label><input type="text" id="inPrazoEntrega" value="Até 5 dias"></div></div>
+            <div class="col w-33"><div class="campo"><label>Condição de Pagamento</label><input type="text" id="inPrazoPagamento" value="30 dias"></div></div>
+        </div>
+
+        <button onclick="compilarOrcamento()">✨ Compilar Dados e Visualizar Proposta</button>
+    </div>
+
+    <div id="preview">
+        <table class="header-table">
+            <tr>
+                <td class="logo-container">
+                    <img src="Logo Repar New.png" class="logo-img" onerror="this.style.display='none'; document.getElementById('logoText').style.display='block';">
+                    <div id="logoText" style="display:none; font-size:24pt; font-weight:900; color:#b01212; font-style:italic; letter-spacing:-1px;">REPAR</div>
+                </td>
+                <td class="company-info">
+                    <div class="company-title">Repar Service</div>
+                    <strong>Manutenção Eletrônica Industrial Avançada</strong><br>
+                    CNPJ: 05.947.277/0001-40<br>
+                    Rua Ibicuaraí, 440 - CEP: 12238-140 - S. J. dos Campos - SP<br>
+                    Contato: (12) 99149-5660 | lourdes@reparservice.com.br
+                </td>
+            </tr>
+        </table>
+
+        <div class="doc-title-bar">
+            <div class="doc-title-cell">Proposta Técnica e Comercial</div>
+            <div class="doc-meta-cell" id="outOSBar"></div>
+        </div>
+
+        <div class="secao-titulo">Dados Cadastrais do Cliente</div>
+        <div class="info-block">
+            <table class="info-table">
+                <tr><td class="info-label">Razão Social:</td><td class="info-value" id="outCliente" colspan="3"></td></tr>
+                <tr>
+                    <td class="info-label">CNPJ:</td><td class="info-value" id="outCNPJ"></td>
+                    <td class="info-label" style="width:100px;">Solicitante:</td><td class="info-value" id="outSolicitante"></td>
+                </tr>
+                <tr>
+                    <td class="info-label">E-mail:</td><td class="info-value" id="outEmail"></td>
+                    <td class="info-label">Manutenção:</td><td class="info-value" id="outTipo" style="font-weight:bold;"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="secao-titulo">Identificação do Equipamento Industrial</div>
+        <div class="info-block">
+            <table class="info-table">
+                <tr>
+                    <td class="info-label">Equipamento:</td><td class="info-value" id="outEquip"></td>
+                    <td class="info-label" style="width:110px;">Fabricante:</td><td class="info-value" id="outFabricante"></td>
+                </tr>
+                <tr>
+                    <td class="info-label">Modelo Técnico:</td><td class="info-value" id="outModelo"></td>
+                    <td class="info-label">Nº de Série:</td><td class="info-value" id="outSerie"></td>
+                </tr>
+                <tr>
+                    <td class="info-label">Nota Fiscal Ref.:</td><td class="info-value" id="outNF"></td>
+                    <td class="info-label">Data de Entrada:</td><td class="info-value" id="outDataEntrada"></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="secao-titulo">1. Diagnóstico de Laboratório Técnico</div>
+        <div class="diagnostico-box">
+            <div id="diagChecklist"></div>
+            <div class="texto-laudo" id="outLaudo"></div>
+        </div>
+
+        <div class="secao-titulo">2. Análise Causal Identificada</div>
+        <div class="diagnostico-box" id="causasChecklist" style="border-left-color: #4a5568;"></div>
+
+        <div class="secao-titulo">3. Escopo e Metodologia de Reparo</div>
+        <div class="info-block" style="background:#fff;">
+            <ul class="service-list">
+                <li>Desmontagem integral estrutural, mapeamento de falhas e análise microeletrônica.</li>
+                <li>Limpeza química profissional especializada por ultrassom de placas integradas.</li>
+                <li>Substituição de semicondutores avariados e componentes críticos em fadiga estrutural.</li>
+                <li>Aplicação de verniz protetor dielétrico e isolante térmico de alta performance.</li>
+                <li>Testes dinâmicos de carga monitorados em bancadas antes da liberação e lacre do equipamento.</li>
+            </ul>
+        </div>
+
+        <div class="secao-titulo">4. Condições Comerciais e Investimento</div>
+        <table class="tabela-financeira">
+            <thead>
+                <tr>
+                    <th style="width: 80px; text-align:center;">Item</th>
+                    <th>Descrição Ampla dos Serviços e Peças Homologadas</th>
+                    <th style="text-align: right; width: 180px;">Subtotal (R$)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="text-align: center; font-weight: bold;">01</td>
+                    <td><strong>Manutenção Técnico-Corretiva Industrial Avançada</strong><br>
+                    <span style="font-size: 8.5pt; color: #718096;">Mão de obra analítica especializada de bancada, engenharia reversa, peças de reposição e testes sob carga.</span></td>
+                    <td style="text-align: right; font-weight: 600;" id="outSubtotal"></td>
+                </tr>
+                <tr class="linha-total">
+                    <td colspan="2" style="text-align: right; text-transform: uppercase;">Valor Total da Proposta (Incluso Impostos):</td>
+                    <td style="text-align: right;" id="outTotal"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="grid" style="margin-bottom: 25px;">
+            <div class="col w-50"><div style="font-size: 9.5pt;"><strong>Prazo de Execução:</strong> <span id="outPrazoEntrega"></span></div></div>
+            <div class="col w-50" style="text-align: right;"><div style="font-size: 9.5pt;"><strong>Faturamento / Pagamento:</strong> <span id="outPrazoPagamento"></span></div></div>
+        </div>
+
+        <div class="secao-titulo">5. Termos de Garantia e Condições Gerais</div>
+        <div class="garantia-box">
+            • A <strong>Repar Service</strong> assegura garantia legal de **03 (três) meses** sobre a mão de obra e peças aplicadas a contar da retirada do aparelho.<br>
+            • A garantia restringe-se exclusivamente aos circuitos reparados. Perderá a validade em caso de violação de lacres, mau uso ou intempéries elétricas da rede.<br>
+            • Backups e parametrizações técnicas originais de software de controle industrial são de responsabilidade do cliente proprietário.
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <div class="assinatura-container">
+                <strong>Lourdes Rodrigues</strong><br>
+                Diretoria Comercial • Repar Service
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function compilarOrcamento() {
+            document.getElementById('outOSBar').innerHTML = "<strong>OS:</strong> " + document.getElementById('inOS').value + " &nbsp;|&nbsp; <strong>Emissão:</strong> " + document.getElementById('inData').value + " &nbsp;|&nbsp; <strong>Validade:</strong> " + document.getElementById('inValidade').value;
+            document.getElementById('outCliente').innerText = document.getElementById('inCliente').value;
+            document.getElementById('outCNPJ').innerText = document.getElementById('inCNPJ').value;
+            document.getElementById('outSolicitante').innerText = document.getElementById('inSolicitante').value;
+            document.getElementById('outEmail').innerText = document.getElementById('inEmail').value;
+            document.getElementById('outTipo').innerText = document.getElementById('inTipo').value.toUpperCase();
+
+            document.getElementById('outEquip').innerText = document.getElementById('inEquip').value;
+            document.getElementById('outFabricante').innerText = document.getElementById('inFabricante').value;
+            document.getElementById('outModelo').innerText = document.getElementById('inModelo').value;
+            document.getElementById('outSerie').innerText = document.getElementById('inSerie').value;
+            document.getElementById('outNF').innerText = document.getElementById('inNF').value;
+            document.getElementById('outDataEntrada').innerText = document.getElementById('inDataEntrada').value;
+
+            document.getElementById('outLaudo').innerText = document.getElementById('inLaudo').value;
+
+            let diags = [
+                { id: 'chkDiag1', text: 'Aparelho totalmente inoperante (Não liga)' },
+                { id: 'chkDiag2', text: 'Componentes internos avariados / Danos físicos detectados' },
+                { id: 'chkDiag3', text: 'Sinais de oxidação estrutural por umidade ou líquido' },
+                { id: 'chkDiag4', text: 'Instabilidade técnica intermitente ou superaquecimento' }
+            ];
+            let diagHtml = "";
+            diags.forEach(item => {
+                let checked = document.getElementById(item.id).checked ? "X" : "&nbsp;&nbsp;";
+                diagHtml += `<div class="diag-item"><span class="diag-item-box">${checked}</span> ${item.text}</div>`;
+            });
+            document.getElementById('diagChecklist').innerHTML = diagHtml;
+
+            let causas = [
+                { id: 'chkCausa1', text: 'Sobretensão originada na rede elétrica externa' },
+                { id: 'chkCausa2', text: 'Sobrecarga gerada por descarga atmosférica (Surto de Raio)' },
+                { id: 'chkCausa3', text: 'Contaminação por agentes externos (Poeira condutiva / Óleo)' },
+                { id: 'chkCausa4', text: 'Degradação natural por tempo de operação (Vida útil)' }
+            ];
+            let causaHtml = "";
+            causas.forEach(item => {
+                let checked = document.getElementById(item.id).checked ? "X" : "&nbsp;&nbsp;";
+                causaHtml += `<div class="diag-item"><span class="diag-item-box">${checked}</span> ${item.text}</div>`;
+            });
+            document.getElementById('causasChecklist').innerHTML = causaHtml;
+
+            let valorFormatado = "R$ " + document.getElementById('inValor').value;
+            document.getElementById('outSubtotal').innerText = valorFormatado;
+            document.getElementById('outTotal').innerText = valorFormatado;
+            document.getElementById('outPrazoEntrega').innerText = document.getElementById('inPrazoEntrega').value;
+            document.getElementById('outPrazoPagamento').innerText = document.getElementById('inPrazoPagamento').value;
+
+            document.getElementById('preview').style.display = 'block';
+            window.print();
+        }
+    </script>
+</body>
+</html>
